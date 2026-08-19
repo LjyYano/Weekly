@@ -1,0 +1,20 @@
+---
+import '../styles/theme.css';
+import '../styles/index.css';
+import '../styles/yano-overrides.css';
+import { SITE } from '@/config';
+const { icon } = SITE;
+---
+
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width' />
+
+<link rel='preconnect' href='https://gw.alipayobjects.com' />
+<link rel='preconnect' href='https://gw.alipayobjects.com' crossorigin />
+
+<link rel='icon' type='image/svg+xml' href={icon} />
+<link rel='apple-touch-icon' href={icon} />
+<link rel='sitemap' href='/sitemap.xml' />
+
+<link rel='preload' href='/fonts/jinkai.css' as='style' onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel='stylesheet' href='/fonts/jinkai.css' /></noscript>

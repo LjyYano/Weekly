@@ -1,0 +1,88 @@
+:root {
+  /* Typography */
+  --font-fallback: "TsangerJinKai02", "STKaiti", "KaiTi", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --font-body: var(--font-fallback);
+  --font-mono: "SF Mono", Consolas, Monaco, "Courier New", Courier, monospace;
+  --theme-navbar-height: 96px;
+
+  /* Design System Tokens */
+  --radius: 8px;
+  --transition-base: 200ms ease;
+  --line-height-normal: 1.7;
+  --line-height-tight: 1.6;
+  --font-size-base: 16px;
+  --font-size-small: 14px;
+
+  /* Spacing Scale (4px based) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Light Theme Colors */
+  color-scheme: light;
+  --theme-bg: #fff;
+  --theme-accent: #a67c52;
+  --theme-text: #262626;
+  --theme-divider: #e6e6e6;
+  --placeholder-gradient-start: #ece9e6;
+  --placeholder-gradient-end: #ffffff;
+  --pagefind-ui-text: #393939;
+  --pagefind-ui-background: #ffffff;
+  --pagefind-ui-border: #eeeeee;
+  --pagefind-ui-tag: #eeeeee;
+
+  /* Decorative Elements */
+  --grid-line-color: rgba(0, 0, 0, 0.06);
+  --lightense-backdrop-color: rgba(230, 230, 230, 0.85);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-accent: #e8a15a;
+  --theme-text: #e7e9ea;
+  --theme-divider: #555;
+  --theme-bg: #21262b;
+  --lightense-backdrop-color: rgba(18, 18, 18, 0.78);
+  --placeholder-gradient-start: #2c3e50;
+  --placeholder-gradient-end: #34495e;
+  --pagefind-ui-text: #e7e9ea;
+  --pagefind-ui-background: #21262b;
+  --pagefind-ui-border: #333;
+  --pagefind-ui-tag: #333;
+  --grid-line-color: rgba(255, 255, 255, 0.06);
+}
+
+body {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  letter-spacing: 0.5px;
+}
+
+.dark .shadow-md {
+  box-shadow:
+    0 2px 5px -1px rgb(0 0 0 / 0.18),
+    0 1px 5px -1px rgb(0 0 0 / 0.18);
+}
+
+site-search dialog {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+site-search dialog button {
+  background-color: var(--theme-text);
+  color: var(--theme-bg);
+}
+
+html {
+  transition:
+    color var(--transition-base),
+    background-color var(--transition-base);
+  scroll-behavior: smooth;
+}

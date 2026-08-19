@@ -1,0 +1,225 @@
+---
+import { SITE } from '@/config';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+export interface Props {
+  content: any;
+  pageURL: URL | string;
+  markdownUrl?: string;
+}
+const { icon, keywords, author, twitterId, githubId, homePage, siteImage, blogPage, repo } = SITE;
+const { content = {}, pageURL, markdownUrl } = Astro.props;
+const { title: contentTitle, socialImage, description: contentDescription, image } = content;
+
+// Site name follows the page language so English pages share as "Weekly ..."
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const title = t('site.title');
+const pageTitle = contentTitle ? (lang === 'en' ? `${title} ${contentTitle}` : `${title}${contentTitle}`) : title;
+// Check if this is an article page
+const isArticle = contentTitle && content.date;
+const imageSrc = isArticle ? (socialImage || siteImage) : siteImage;
+const description = contentDescription || t('site.description');
+const preloadImage = image ? `${image}?x-oss-process=image/resize,w_1200/format,webp` : false;
+const canonicalURL = new URL(pageURL, homePage).href;
+const inLanguage = lang === 'en' ? 'en' : 'zh-Hans';
+
+// Stable @id anchors so every page links back to the same entities
+const websiteId = `${homePage}/#website`;
+const blogId = `${homePage}/#blog`;
+const organizationId = `${homePage}/#organization`;
+const personId = `${homePage}/#author`;
+const apiId = `${homePage}/#api`;
+
+const sameAs = [`https://github.com/${githubId}`, `https://github.com/${repo}`, `https://x.com/${twitterId}`, blogPage];
+
+// cssSelector and xpath must not be combined in one SpeakableSpecification
+const speakable = {
+  '@type': 'SpeakableSpecification',
+  cssSelector: isArticle ? ['.content-title', '.markdown-body blockquote'] : ['header h1', '.card-content p'],
+};
+
+const person = {
+  '@type': 'Person',
+  '@id': personId,
+  name: author,
+  url: blogPage,
+  jobTitle: 'Product Engineer',
+  knowsAbout: ['Frontend engineering', 'macOS apps', 'Rust', 'Swift', 'Electron', 'Product design', 'Open source'],
+  address: { '@type': 'PostalAddress', addressLocality: 'Hangzhou', addressRegion: 'Zhejiang', addressCountry: 'CN' },
+  sameAs,
+};
+
+const organization = {
+  '@type': 'Organization',
+  '@id': organizationId,
+  name: '潮流周刊 (Tw93 Weekly)',
+  alternateName: ['潮流周刊', 'Tw93 Weekly', 'Weekly'],
+  url: homePage,
+  logo: { '@type': 'ImageObject', url: icon, width: 144, height: 144 },
+  image: siteImage,
+  description: t('site.description'),
+  email: 'tw93@qq.com',
+  foundingDate: '2020-11-24',
+  founder: { '@id': personId },
+  publishingPrinciples: `${homePage}/about`,
+  address: { '@type': 'PostalAddress', addressLocality: 'Hangzhou', addressRegion: 'Zhejiang', addressCountry: 'CN' },
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      contactType: 'editorial',
+      email: 'tw93@qq.com',
+      url: `https://github.com/${repo}/issues`,
+      availableLanguage: ['Chinese', 'English'],
+    },
+  ],
+  sameAs,
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': websiteId,
+  name: title,
+  alternateName: ['潮流周刊', 'Tw93 Weekly'],
+  url: homePage,
+  description: t('site.description'),
+  inLanguage: ['zh-Hans', 'en'],
+  isAccessibleForFree: true,
+  keywords,
+  publisher: { '@id': organizationId },
+  author: { '@id': personId },
+  mainEntity: { '@id': blogId },
+};
+
+const blog = {
+  '@type': 'Blog',
+  '@id': blogId,
+  name: '潮流周刊 (Tw93 Weekly)',
+  url: homePage,
+  description: t('site.description'),
+  inLanguage: ['zh-Hans', 'en'],
+  isAccessibleForFree: true,
+  author: { '@id': personId },
+  publisher: { '@id': organizationId },
+};
+
+// Read-only content API and bulk feed, both real endpoints on this domain
+const webApi = {
+  '@type': 'WebAPI',
+  '@id': apiId,
+  name: '潮流周刊 (Tw93 Weekly) content API',
+  description:
+    'Read-only static JSON and Markdown API over every weekly issue. No key, no rate limit, CORS open, no write operations.',
+  url: `${homePage}/api`,
+  documentation: `${homePage}/llms.md`,
+  termsOfService: `${homePage}/about`,
+  isAccessibleForFree: true,
+  provider: { '@id': organizationId },
+};
+
+const dataFeed = {
+  '@type': 'DataFeed',
+  '@id': `${homePage}/#feed`,
+  name: '潮流周刊 issue feed',
+  description: 'One schema.org BlogPosting per line for every issue, Chinese and English.',
+  url: `${homePage}/feeds/posts.jsonl`,
+  encodingFormat: 'application/x-ndjson',
+  inLanguage: ['zh-Hans', 'en'],
+  isAccessibleForFree: true,
+  provider: { '@id': organizationId },
+};
+
+const articleNode = isArticle
+  ? {
+      '@type': 'BlogPosting',
+      '@id': `${canonicalURL}#blogposting`,
+      headline: contentTitle,
+      name: contentTitle,
+      description,
+      image: image || imageSrc,
+      inLanguage,
+      datePublished: content.date,
+      dateModified: content.date,
+      url: canonicalURL,
+      isPartOf: { '@id': blogId },
+      author: { '@id': personId },
+      publisher: { '@id': organizationId },
+      speakable,
+      mainEntityOfPage: { '@id': `${canonicalURL}#webpage` },
+      encoding: markdownUrl
+        ? {
+            '@type': 'MediaObject',
+            encodingFormat: 'text/markdown',
+            contentUrl: new URL(markdownUrl, homePage).href,
+          }
+        : undefined,
+    }
+  : null;
+
+const breadcrumb = isArticle
+  ? {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonicalURL}#breadcrumb`,
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: title,
+          item: lang === 'en' ? `${homePage}/en` : homePage,
+        },
+        { '@type': 'ListItem', position: 2, name: contentTitle, item: canonicalURL },
+      ],
+    }
+  : null;
+
+const webPage = {
+  '@type': isArticle ? 'WebPage' : 'CollectionPage',
+  '@id': `${canonicalURL}#webpage`,
+  url: canonicalURL,
+  name: pageTitle,
+  description,
+  inLanguage,
+  isPartOf: { '@id': websiteId },
+  primaryImageOfPage: { '@type': 'ImageObject', url: imageSrc },
+  speakable,
+  ...(isArticle ? { breadcrumb: { '@id': `${canonicalURL}#breadcrumb` } } : {}),
+  ...(markdownUrl ? { encoding: { '@type': 'MediaObject', encodingFormat: 'text/markdown', contentUrl: new URL(markdownUrl, homePage).href } } : {}),
+};
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [website, blog, organization, person, webApi, dataFeed, webPage, articleNode, breadcrumb].filter(Boolean),
+};
+---
+
+<!-- Canonical URL -->
+<link rel='canonical' href={canonicalURL} />
+
+<meta name='twitter:card' content='summary_large_image' />
+<meta name='twitter:image' content={imageSrc} />
+<meta name='twitter:site' content={homePage} />
+<meta property='twitter:url' content={pageURL} />
+<meta name='twitter:creator' content={`@${twitterId}`} />
+<meta property='twitter:description' content={description} />
+<meta name='keywords' content={keywords} />
+<meta name='author' content={author} />
+<meta name='description' content={description} />
+<meta property='og:type' content={isArticle ? 'article' : 'website'} />
+<meta property='og:title' content={pageTitle} />
+<meta property='og:image' content={imageSrc} />
+<meta property='og:description' content={description} />
+<meta property='og:url' content={pageURL} />
+<meta property='og:site_name' content={title} />
+{isArticle && content.date && <meta property='article:published_time' content={content.date} />}
+{isArticle && <meta property='article:author' content={author} />}
+
+<!-- Machine-readable twins and service descriptions -->
+{markdownUrl && <link rel='alternate' type='text/markdown' href={markdownUrl} title='Markdown version' />}
+<link rel='describedby' type='text/plain' href='/llms.txt' title='Agent index' />
+<link rel='service-desc' type='application/openapi+json' href='/openapi.json' title='OpenAPI 3.1 description' />
+<link rel='service-doc' type='text/markdown' href='/llms.md' title='Agent guide' />
+<link rel='api-catalog' href='/.well-known/api-catalog' title='API catalog' />
+
+<!-- JSON-LD Structured Data -->
+<script type='application/ld+json' set:html={JSON.stringify(structuredData)} />
+
+{preloadImage && <link rel='preload' href={preloadImage} as='image' />}

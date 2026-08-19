@@ -1,0 +1,491 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body {
+  width: 100%;
+}
+
+/* Global focus outline reset */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:root {
+  --max-width: calc(100% - 16px);
+}
+
+@media (min-width: 800px) {
+  :root {
+    --max-width: 864px;
+  }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  max-width: 100vw;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.content > section > * + * {
+  margin-top: 20px;
+}
+
+.content > section > :first-child {
+  margin-top: 0;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+:is(h2, h3):not(:first-child) {
+  margin-top: 42px;
+  margin-bottom: -10px;
+}
+
+:is(h4, h5, h6):not(:first-child) {
+  margin-top: 32px;
+  margin-bottom: -6px;
+}
+
+/* When a heading is directly followed by an image (not a text paragraph),
+   there is no line-height leading to absorb the negative margin above, so
+   the image overlaps the heading. Restore a normal gap for that case only. */
+:is(h2, h3, h4, h5, h6):not(:first-child):has(+ img) {
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+h3 {
+  font-size: clamp(22px, 3vw, 28px);
+}
+
+h4 {
+  font-size: clamp(18px, 2.5vw, 20px);
+}
+
+h5 {
+  font-size: clamp(16px, 2vw, 18px);
+}
+
+p {
+  line-height: var(--line-height-normal);
+}
+
+.content ul {
+  line-height: 1.1;
+}
+
+p,
+.content ul {
+  color: var(--theme-text);
+}
+
+small,
+.text_small {
+  font-size: var(--font-size-small);
+}
+
+a {
+  font-weight: 400;
+  align-items: center;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+article > section :is(ul, ol) > * + * {
+  margin-top: 12px;
+}
+
+article > section nav :is(ul, ol) > * + * {
+  margin-top: inherit;
+}
+
+article > section li > :is(p, pre, blockquote):not(:first-child) {
+  margin-top: 16px;
+}
+
+article > section :is(ul, ol) {
+  padding-left: 16px;
+}
+
+article > section nav :is(ul, ol) {
+  padding-left: inherit;
+}
+
+article > section nav {
+  margin-top: 16px;
+  margin-bottom: 32px;
+}
+
+article > section ::marker {
+  font-weight: bold;
+  color: var(--theme-text);
+}
+
+article > section iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+a > code {
+  position: relative;
+  color: var(--theme-accent);
+  background: transparent;
+  text-underline-offset: var(--padding-block);
+}
+
+a > code::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  background: var(--theme-accent);
+  border-radius: var(--radius);
+}
+
+strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+/* Supporting Content */
+
+code {
+  --padding-block: 3px;
+  --padding-inline: 6px;
+
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: inherit;
+  background-color: var(--theme-code-inline-bg);
+  padding: var(--padding-block) var(--padding-inline);
+  margin: calc(var(--padding-block) * -1) -2px;
+  border-radius: var(--radius);
+  word-break: break-word;
+  transition: background-color var(--transition-base);
+}
+
+pre.astro-code > code {
+  all: unset;
+}
+
+pre > code {
+  font-size: var(--font-size-base);
+}
+
+table,
+pre {
+  position: relative;
+  --padding-block: var(--space-4);
+  --padding-inline: var(--space-8);
+  padding: var(--padding-block) var(--padding-inline);
+  padding-right: calc(var(--padding-inline) * 2);
+  margin-left: calc(var(--padding-inline) * -1);
+  margin-right: calc(var(--padding-inline) * -1);
+  font-family: var(--font-mono);
+  line-height: var(--line-height-tight);
+  font-size: var(--font-size-small);
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  padding: var(--padding-block) 0;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+/* Zebra striping */
+tr:nth-of-type(odd) {
+  background: var(--theme-bg-hover);
+}
+th {
+  background: var(--color-black);
+  color: var(--theme-color);
+  font-weight: bold;
+}
+td,
+th {
+  padding: 6px;
+  text-align: left;
+}
+
+pre {
+  background-color: var(--theme-code-bg);
+  color: var(--theme-code-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow var(--transition-base);
+}
+
+pre:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+blockquote code {
+  background-color: var(--theme-bg);
+}
+
+@media (min-width: 604px) {
+  pre {
+    --padding-inline: var(--space-5);
+    border-radius: var(--radius);
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+blockquote,
+.heti blockquote {
+  margin: var(--space-6) 0;
+  padding: var(--space-1) var(--space-3);
+  border-left: 3px solid var(--theme-divider);
+  background-color: transparent;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  line-height: var(--line-height-normal);
+  color: #777;
+  overflow: visible;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+[data-theme="dark"] blockquote,
+[data-theme="dark"] .heti blockquote {
+  color: #aaa;
+}
+
+blockquote p:first-child,
+.heti blockquote p:first-child {
+  margin-top: 0;
+}
+
+blockquote p:last-child,
+.heti blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.heti blockquote p {
+  line-height: var(--line-height-normal);
+  margin-block-start: 0.5em;
+  margin-block-end: 0.5em;
+}
+
+img,
+iframe {
+  max-width: 100%;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background-color: var(--theme-bg);
+  font-size: var(--font-size-base);
+  border-radius: var(--radius);
+  color: var(--theme-text);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  height: 36px;
+  min-height: 36px;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+h2.heading {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  padding: 2px var(--space-4);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.header-link {
+  font-size: var(--font-size-base);
+  padding: 2px 0 2px var(--space-4);
+  border-left: var(--space-1) solid var(--theme-divider);
+}
+
+.header-link:hover,
+.header-link:focus {
+  border-left-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+.header-link:focus-within {
+  color: var(--theme-text);
+  border-left-color: hsla(var(--color-gray-40), 1);
+}
+.header-link svg {
+  opacity: 0.6;
+}
+.header-link:hover svg {
+  opacity: 0.8;
+}
+.header-link a {
+  display: inline-flex;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 0 2px 0;
+}
+
+.header-link.depth-3 {
+  padding-left: 32px;
+}
+.header-link.depth-4 {
+  padding-left: 48px;
+}
+
+.header-link a {
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Screenreader Only Text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus,
+.focus\:not-sr-only:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+:target {
+  scroll-margin: calc(var(--theme-sidebar-offset, 80px) + 32px) 0 32px;
+}
+
+#write > img,
+#write > p > img,
+#write > table > img {
+  cursor: zoom-in;
+}
+
+.markdown-body img,
+.markdown-body video {
+  border-radius: var(--radius);
+}
+
+/* Homepage feed width. Shared by the header and the card grid so the logo
+   always lines up with the first card. Breakpoints mirror tailwind.config.cjs. */
+.feed-container {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 36rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .feed-container {
+    max-width: 840px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+@media (min-width: 1000px) {
+  .feed-container {
+    max-width: 1180px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1300px) {
+  .feed-container {
+    max-width: 1386px;
+  }
+}
+
+/* About page width. Shared by the header and the article so the logo lines up
+   with the heading. Content grows with the viewport up to the 659px reading
+   measure and stops there, with no jump at either breakpoint. */
+.page-container {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 691px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    max-width: 699px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    max-width: 659px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

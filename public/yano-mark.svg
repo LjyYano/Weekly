@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Yano</title>
+  <rect width="512" height="512" rx="112" fill="#111827"/>
+  <path d="M128 132h67l61 98 61-98h67l-96 151v97h-64v-97L128 132z" fill="#ffffff"/>
+</svg>

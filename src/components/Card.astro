@@ -1,0 +1,70 @@
+---
+import { parseTitle, toNumericUrl } from '@/util';
+
+export interface Props {
+  post: {
+    url: string;
+    frontmatter: {
+      image?: string;
+      description?: string;
+      date: string;
+      legacySlug?: string;
+      issueTitle?: string;
+      numericUrl?: string;
+    };
+  };
+  priority?: boolean;
+  isLCP?: boolean;
+}
+
+const { post, priority = false, isLCP = false } = Astro.props;
+import { getLangFromUrl } from '../i18n/utils';
+const lang = getLangFromUrl(Astro.url);
+
+const legacySlug = post.frontmatter?.legacySlug;
+const issueTitle = post.frontmatter?.issueTitle;
+const link = post.frontmatter?.numericUrl ?? toNumericUrl(post.url);
+const title = parseTitle(link, legacySlug, issueTitle, lang);
+const { image, description, date } = post.frontmatter;
+---
+
+<a
+  href={link}
+  data-astro-prefetch
+  data-image={image}
+  class='pb-3 flex flex-col justify-center rounded-lg shadow-md overflow-hidden w-full card-content preload-link'
+  style='transition: all 200ms ease; will-change: transform;'
+>
+  {
+    image && (
+      <img
+        src={`${image}?x-oss-process=image/resize,w_640/format,webp`}
+        width='640'
+        height='384'
+        alt={title}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding='async'
+        fetchpriority={isLCP ? 'high' : 'auto'}
+        class='block w-full aspect-[5/3] object-cover rounded-t-lg'
+        style='transition: transform 200ms ease;'
+      />
+    )
+  }
+  <div class='w-full flex justify-between items-center leading-tight pt-3 px-3'>
+    <div
+      class='text-gray-800 dark:text-gray-200 font-semibold sm:text-base text-lg overflow-hidden text-ellipsis whitespace-nowrap flex-1 mr-2 min-w-0'
+    >
+      {title}
+    </div>
+    <div class='text-grey-darker text-gray-600 dark:text-gray-300 sm:text-sm text-base flex-shrink-0'>
+      {date}
+    </div>
+  </div>
+  {
+    description && (
+      <p class='text-gray-600 dark:text-gray-300 overflow-hidden pt-2 line-clamp-2 px-3 w-full sm:h-12 h-14 sm:text-sm text-base'>
+        {description}
+      </p>
+    )
+  }
+</a>

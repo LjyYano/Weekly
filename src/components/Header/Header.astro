@@ -1,0 +1,111 @@
+---
+import HeaderRight from './HeaderRight.astro';
+import { getLangFromUrl, useTranslations, useLocalizedPath } from '../../i18n/utils';
+
+export interface Props {
+  /** `feed` matches the homepage card grid width; `page` keeps the article/about width. */
+  layout?: 'feed' | 'page';
+}
+
+const { layout = 'page' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useLocalizedPath(lang);
+
+const navClass = `nav-wrapper mx-auto ${layout === 'feed' ? 'feed-container' : 'page-container'}`;
+---
+
+<header>
+  <nav class={navClass} title={t('site.title')}>
+    <div class='logo'>
+      <a href={translatePath('/')} aria-label={t('site.title')}>
+        <h1 class='text-gray-800 dark:text-gray-200'>{t('site.title')}</h1>
+      </a>
+    </div>
+    <HeaderRight />
+  </nav>
+</header>
+
+<style>
+  header {
+    height: var(--theme-navbar-height);
+    width: 100%;
+    background-color: var(--theme-navbar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+  }
+
+  .logo {
+    display: flex;
+    font-size: 32px;
+    flex-shrink: 0;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .logo a {
+    padding: 8px 4px;
+    margin: -8px -4px;
+    text-decoration: none;
+    font-weight: bolder;
+    display: block;
+    transition: all 200ms ease;
+    color: var(--theme-text);
+  }
+
+  .logo a:hover,
+  .logo a:focus {
+    color: var(--theme-accent);
+  }
+
+  .logo h1 {
+    font: inherit;
+    margin: 0;
+  }
+
+  .nav-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 36px;
+  }
+
+  @media (max-width: 800px) {
+    .nav-wrapper {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+  }
+
+  :root {
+    --docsearch-primary-color: var(--theme-accent);
+    --docsearch-logo-color: var(--theme-text);
+  }
+
+  .search-item {
+    display: none;
+    position: relative;
+    z-index: 10;
+    flex-grow: 1;
+    padding-right: 11px;
+    display: flex;
+    max-width: 200px;
+  }
+
+  .btn-yellow {
+    color: #a67c52 !important;
+    font-weight: bold;
+  }
+
+  :global(.search-item > *) {
+    flex-grow: 1;
+  }
+
+  @media (min-width: 800px) {
+    .search-item {
+      max-width: 400px;
+    }
+  }
+</style>

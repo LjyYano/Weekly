@@ -1,0 +1,18 @@
+---
+export interface Props {
+  allPosts: any[];
+}
+
+const { allPosts } = Astro.props;
+---
+
+{
+  // Preload only the top 3 cards (the LCP candidates); more preloads just
+  // compete with the LCP image for early bandwidth, the rest are loading="lazy".
+  allPosts.slice(0, 3).map((post) => {
+    const image = post.frontmatter.image;
+    if (!image) return null;
+    const href = `${image}?x-oss-process=image/resize,w_640/format,webp`;
+    return <link rel='preload' href={href} as='image' fetchpriority='high' />;
+  })
+}

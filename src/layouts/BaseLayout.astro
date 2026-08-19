@@ -1,0 +1,61 @@
+---
+import HeadCommon from '../components/HeadCommon.astro';
+import HeadSEO from '../components/HeadSEO.astro';
+import Footer from '../components/Footer.astro';
+import ClientScripts from '../components/ClientScripts.astro';
+import { SITE } from '@/config';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  socialImage?: string;
+  pageURL?: string;
+  content?: any;
+  includeScripts?: boolean;
+  /** Markdown twin of this page, advertised to agents as rel=alternate. */
+  markdownUrl?: string;
+}
+
+const {
+  title = SITE.title,
+  description = SITE.description,
+  image,
+  socialImage,
+  pageURL = SITE.homePage,
+  content = {},
+  includeScripts = true,
+  markdownUrl,
+} = Astro.props;
+
+import { getLangFromUrl, useTranslations, useLocalizedPath } from '../i18n/utils';
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useLocalizedPath(lang);
+// Merge provided SEO data with content object
+const localizedSiteTitle = t('site.title');
+const seoContent = {
+  title: content.title || title.replace(SITE.title, '').replace(localizedSiteTitle, '').trim(),
+  description: content.description || description,
+  image: content.image || image,
+  socialImage: content.socialImage || socialImage,
+  ...content,
+};
+---
+
+<html lang={lang === 'en' ? 'en' : 'zh-CN'}>
+  <head>
+    <HeadCommon />
+    <HeadSEO content={seoContent} pageURL={pageURL} markdownUrl={markdownUrl} />
+    <meta name='generator' content={Astro.generator} />
+    <title>{title}</title>
+    <slot name='head' />
+  </head>
+
+  <body>
+    <slot />
+    <Footer />
+    {includeScripts && <ClientScripts />}
+    <slot name='scripts' />
+  </body>
+</html>

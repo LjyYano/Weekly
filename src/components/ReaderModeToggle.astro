@@ -1,0 +1,227 @@
+<!-- Reader mode toggle button -->
+<button
+  id='reader-toggle'
+  class='reader-toggle flex items-center justify-center ml-2 !bg-gray-100 dark:!bg-gray-800 rounded-full !text-gray-600 dark:!text-gray-400 hover:!text-gray-900 dark:hover:!text-gray-200'
+  aria-label='Toggle reader mode'
+  aria-pressed='false'
+  title='切换纯净阅读模式'
+  type='button'
+>
+  <svg
+    class='reader-icon'
+    aria-hidden='true'
+    width='20'
+    height='20'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    stroke-width='2'
+    stroke-linecap='round'
+    stroke-linejoin='round'
+  >
+    <!-- Lucide sprout icon for a calmer reader mode affordance -->
+    <path d='M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3'></path>
+    <path d='M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4'></path>
+    <path d='M5 21h14'></path>
+  </svg>
+</button>
+
+<style is:global>
+  .reader-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    transition: all var(--transition-base);
+    height: 36px;
+    min-height: 36px;
+    width: 36px;
+    min-width: 36px;
+    margin-top: 2px;
+  }
+
+  .reader-toggle:hover {
+    opacity: 1 !important;
+    background-color: var(--theme-bg-hover) !important;
+  }
+
+  .reader-icon {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Elements hidden in reader mode */
+  [data-reader-mode='true'] #grid-left,
+  [data-reader-mode='true'] #grid-right {
+    display: none !important;
+  }
+
+  [data-reader-mode='true'] .logo {
+    display: none !important;
+  }
+
+  /* Keep the toggle subtle unless the reader needs it */
+  .content-title .reader-toggle {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.94);
+  }
+
+  [data-reader-mode='true'] .reader-toggle {
+    color: var(--theme-accent);
+    opacity: 0.85;
+  }
+
+  [data-reader-mode='true'] .reader-toggle .reader-icon {
+    opacity: 1;
+  }
+
+  .reader-toggle.reader-toggle-hint,
+  .content-title:hover .reader-toggle,
+  .content-title:focus-within .reader-toggle,
+  .reader-toggle:focus-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+
+  @media (max-width: 768px) {
+    #reader-toggle {
+      display: none !important;
+    }
+  }
+
+  [data-reader-mode='true'] .search-button {
+    display: none !important;
+  }
+
+  [data-reader-mode='true'] .content-title .site-search {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  [data-reader-mode='true'] .lang-switch-wrapper {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  [data-reader-mode='true'] .pay-button-wrapper {
+    display: none !important;
+  }
+
+  [data-reader-mode='true'] .post-footer {
+    display: none !important;
+  }
+
+  [data-reader-mode='true'] .post-divider {
+    display: none !important;
+  }
+
+  [data-reader-mode='true'] #giscus-script,
+  [data-reader-mode='true'] .giscus {
+    display: none !important;
+  }
+
+  /* Layout optimization for reader mode */
+  [data-reader-mode='true'] .layout {
+    grid-template-columns: minmax(var(--gutter), 1fr) minmax(0, var(--max-width)) minmax(var(--gutter), 1fr) !important;
+  }
+
+  @media (min-width: 800px) {
+    [data-reader-mode='true'] .layout {
+      grid-template-columns: 288px minmax(0, var(--max-width)) !important;
+    }
+  }
+
+  @media (min-width: 1152px) {
+    [data-reader-mode='true'] .layout {
+      grid-template-columns: 320px minmax(0, var(--max-width)) 208px !important;
+    }
+  }
+
+  [data-reader-mode='true'] #grid-main {
+    grid-column: 2 !important;
+  }
+
+  /* Mobile adaptation */
+  @media (max-width: 800px) {
+    [data-reader-mode='true'] #grid-main {
+      padding: 13px 16px var(--doc-padding) 16px !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  window.addEventListener('DOMContentLoaded', () => {
+    const readerToggle = document.getElementById('reader-toggle');
+    const body = document.body;
+    const HINT_DISPLAY_DURATION = 2000;
+    let readerHintTimeout;
+
+    const showReaderHint = () => {
+      if (!readerToggle) return;
+      readerToggle.classList.add('reader-toggle-hint');
+      clearTimeout(readerHintTimeout);
+      readerHintTimeout = window.setTimeout(() => {
+        readerToggle.classList.remove('reader-toggle-hint');
+      }, HINT_DISPLAY_DURATION);
+    };
+
+    const applyToggleAffordance = (enabled) => {
+      if (!readerToggle) return;
+      readerToggle.setAttribute('aria-pressed', String(enabled));
+      readerToggle.dataset.readerState = enabled ? 'on' : 'off';
+    };
+
+    const setReaderMode = (enabled) => {
+      body.setAttribute('data-reader-mode', enabled ? 'true' : 'false');
+      localStorage.setItem('readerMode', enabled ? 'true' : 'false');
+      applyToggleAffordance(enabled);
+    };
+
+    const toggleReaderMode = () => {
+      const currentMode = body.getAttribute('data-reader-mode') === 'true';
+      setReaderMode(!currentMode);
+      showReaderHint();
+    };
+
+    // Read preference from localStorage
+    const savedMode = localStorage.getItem('readerMode');
+    const urlParams = new URLSearchParams(window.location.search);
+    const readerParam = urlParams.get('reader');
+
+    // URL parameters have the highest priority
+    if (readerParam === 'true') {
+      setReaderMode(true);
+    } else if (savedMode !== null) {
+      setReaderMode(savedMode === 'true');
+    } else {
+      setReaderMode(false);
+    }
+
+    // Briefly show the control regardless of the current mode
+    showReaderHint();
+
+    // Bind click event
+    if (readerToggle) {
+      readerToggle.addEventListener('click', toggleReaderMode);
+    }
+
+    // Hotkey support: Toggle with 'R' key
+    document.addEventListener('keydown', (e) => {
+      // Only respond in non-input environments
+      if (
+        e.key === 'r' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA'
+      ) {
+        toggleReaderMode();
+      }
+    });
+  });
+</script>

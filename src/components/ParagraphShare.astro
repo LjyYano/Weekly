@@ -1,0 +1,228 @@
+---
+// Select text in a post body to copy a deep link; opening that link scrolls to
+// the matching paragraph and highlights it.
+---
+
+<script>
+  const article = document.getElementById('write');
+
+  if (article) {
+    const isEn = document.documentElement.lang === 'en';
+    const BLOCKS = 'p, li, small';
+    const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+    const isTouch = () => matchMedia('(pointer: coarse)').matches;
+    // Keep only leaf blocks so list items and their child paragraphs cannot
+    // compete for the same shared text.
+    const shareBlocks = Array.from(
+      article.querySelectorAll<HTMLElement>(BLOCKS),
+    ).filter((block) => !block.querySelector(BLOCKS));
+
+    // New links carry a block position plus a text check. Legacy #q= links are
+    // still supported, but ambiguous or title-shaped matches fail closed.
+    const hashParams = new URLSearchParams(location.hash.slice(1));
+    const query = norm(hashParams.get('q') || '');
+    if (query) {
+      const blockNumber = Number.parseInt(hashParams.get('p') || '', 10);
+      const indexedTarget = Number.isInteger(blockNumber)
+        ? shareBlocks[blockNumber - 1]
+        : undefined;
+      const titleText = norm(
+        article.querySelector<HTMLElement>(
+          '.content-title [data-pagefind-meta="title"]',
+        )?.textContent || '',
+      );
+      let target =
+        indexedTarget && norm(indexedTarget.textContent || '').includes(query)
+          ? indexedTarget
+          : undefined;
+
+      if (!target && !titleText.includes(query)) {
+        const matches = shareBlocks.filter((block) =>
+          norm(block.textContent || '').includes(query),
+        );
+        if (matches.length === 1) target = matches[0];
+      }
+
+      if (target) {
+        target.classList.add('para-share-target');
+        target.scrollIntoView({ block: 'center' });
+        // Images above may finish loading later and push the paragraph away.
+        window.addEventListener('load', () =>
+          target.scrollIntoView({ block: 'center' }),
+        );
+      }
+    }
+
+    const btn = document.createElement('button');
+    btn.id = 'para-share-btn';
+    btn.type = 'button';
+    btn.textContent = isEn ? 'Copy paragraph link' : '复制此段链接';
+    btn.hidden = true;
+    document.body.appendChild(btn);
+
+    const toast = document.createElement('div');
+    toast.id = 'para-share-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(toast);
+    let toastTimer: ReturnType<typeof setTimeout>;
+    let selectionTimer: ReturnType<typeof setTimeout>;
+    let lastInput: 'pointer' | 'keyboard' = 'pointer';
+    const showToast = (msg: string) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+    };
+
+    const hide = () => {
+      btn.hidden = true;
+    };
+
+    const getShareSelection = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+      const range = sel.getRangeAt(0);
+      const startBlock = shareBlocks.find((block) =>
+        block.contains(range.startContainer),
+      );
+      const endBlock = shareBlocks.find((block) =>
+        block.contains(range.endContainer),
+      );
+      const snippet = norm(sel.toString()).slice(0, 80);
+      if (!startBlock || startBlock !== endBlock || snippet.length < 4)
+        return null;
+      return { range, block: startBlock, snippet };
+    };
+
+    const show = (focusButton = false) => {
+      const selection = getShareSelection();
+      if (!selection) return hide();
+      const rects = Array.from(selection.range.getClientRects()).filter(
+        (rect) => rect.width || rect.height,
+      );
+      const rect =
+        rects[rects.length - 1] || selection.range.getBoundingClientRect();
+      btn.hidden = false;
+      const edge = 12;
+      const gap = 10;
+      const maxLeft = Math.max(edge, innerWidth - btn.offsetWidth - edge);
+      const desiredLeft = rect.left + rect.width / 2 - btn.offsetWidth / 2;
+      const left = Math.max(edge, Math.min(desiredLeft, maxLeft));
+      let top = isTouch()
+        ? rect.bottom + gap
+        : rect.top - btn.offsetHeight - gap;
+
+      if (isTouch() && top + btn.offsetHeight > innerHeight - edge)
+        top = rect.top - btn.offsetHeight - gap;
+      if (!isTouch() && top < edge) top = rect.bottom + gap;
+      top = Math.max(
+        edge,
+        Math.min(top, innerHeight - btn.offsetHeight - edge),
+      );
+      btn.style.top = `${top + scrollY}px`;
+      btn.style.left = `${left + scrollX}px`;
+      if (focusButton) btn.focus({ preventScroll: true });
+    };
+
+    document.addEventListener(
+      'pointerdown',
+      () => (lastInput = 'pointer'),
+      true,
+    );
+    document.addEventListener('keydown', () => (lastInput = 'keyboard'), true);
+    document.addEventListener('pointerup', () => setTimeout(() => show(), 0));
+    document.addEventListener('selectionchange', () => {
+      const sel = window.getSelection();
+      clearTimeout(selectionTimer);
+      if (!sel || sel.isCollapsed) return hide();
+      selectionTimer = setTimeout(() => show(lastInput === 'keyboard'), 0);
+    });
+    window.addEventListener('scroll', hide, { passive: true });
+    window.addEventListener('resize', hide);
+
+    // Keep the selection alive when tapping the button.
+    btn.addEventListener('pointerdown', (e) => e.preventDefault());
+    btn.addEventListener('click', async () => {
+      const selection = getShareSelection();
+      if (!selection) return hide();
+      const blockNumber = shareBlocks.indexOf(selection.block) + 1;
+      const url = `${location.origin}${location.pathname}#p=${blockNumber}&q=${encodeURIComponent(selection.snippet)}`;
+      try {
+        if (!navigator.clipboard?.writeText)
+          throw new Error('Clipboard API unavailable');
+        await navigator.clipboard.writeText(url);
+        showToast(isEn ? 'Paragraph link copied' : '此段链接已复制');
+        hide();
+        window.getSelection()?.removeAllRanges();
+      } catch {
+        showToast(isEn ? "Couldn't copy. Try again" : '复制失败，请重试');
+        show(lastInput === 'keyboard');
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  .para-share-target {
+    background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+    border-radius: 6px;
+    box-shadow: 0 0 0 6px
+      color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  }
+
+  #para-share-btn {
+    position: absolute;
+    z-index: 60;
+    padding: 6px 14px;
+    min-height: 36px;
+    border: none;
+    border-radius: 999px;
+    font-size: 13px;
+    line-height: 1.5;
+    background: var(--theme-text);
+    color: var(--theme-bg);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  #para-share-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%) translateY(8px);
+    z-index: 60;
+    padding: 8px 16px;
+    max-width: calc(100vw - 24px);
+    border-radius: 999px;
+    font-size: 13px;
+    background: var(--theme-text);
+    color: var(--theme-bg);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  #para-share-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (pointer: coarse) {
+    #para-share-btn {
+      min-height: 44px;
+      padding: 10px 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #para-share-toast {
+      transition: none;
+    }
+  }
+</style>

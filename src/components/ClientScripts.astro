@@ -1,0 +1,197 @@
+---
+// Client-side scripts for image optimization and interactions
+---
+
+<!-- Google Analytics -->
+<script is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+
+  // Lazy load Google Analytics
+  const loadGA = () => {
+    const script = document.createElement('script');
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-DT01FBW30E';
+    script.async = true;
+    document.head.appendChild(script);
+
+    gtag('js', new Date());
+    gtag('config', 'G-DT01FBW30E');
+  };
+
+  // Wait for user interaction or delay
+  const triggerGA = () => {
+    window.removeEventListener('scroll', triggerGA);
+    window.removeEventListener('mousemove', triggerGA);
+    window.removeEventListener('touchstart', triggerGA);
+    loadGA();
+  };
+
+  window.addEventListener('scroll', triggerGA, { once: true });
+  window.addEventListener('mousemove', triggerGA, { once: true });
+  window.addEventListener('touchstart', triggerGA, { once: true });
+  setTimeout(() => {
+    // Fallback if no interaction after 5s
+    if (!window.dataLayer.length) loadGA();
+  }, 5000);
+</script>
+
+<script is:inline>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(
+        (registration) => {
+          console.log('SW registered: ', registration);
+        },
+        (registrationError) => {
+          console.log('SW registration failed: ', registrationError);
+        }
+      );
+    });
+  }
+</script>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Open external links in a new tab
+    Array.from(document.links).forEach((link) => {
+      if (link.hostname !== window.location.hostname) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      }
+    });
+
+    // Prevent PhotoSwipe from intercepting clicks on ignored elements
+    document.addEventListener(
+      'click',
+      (e) => {
+        if ((e.target as HTMLElement).closest('.pswp-ignore')) {
+          e.stopPropagation();
+        }
+      },
+      true
+    );
+
+    // Play videos only while in the viewport (autoplay is stripped at build
+    // time into data-autoplay so off-screen videos are never fully downloaded)
+    const deferredVideos = document.querySelectorAll<HTMLVideoElement>('video[data-autoplay]');
+    if (deferredVideos.length > 0) {
+      const videoObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target as HTMLVideoElement;
+            if (entry.isIntersecting) {
+              video.play().catch(() => {});
+            } else if (!video.paused) {
+              video.pause();
+            }
+          });
+        },
+        { rootMargin: '200px 0px' }
+      );
+      deferredVideos.forEach((video) => videoObserver.observe(video));
+    }
+
+    // Lazy load images after the first two
+    const images = document.querySelectorAll('#write img');
+    images.forEach((img, index) => {
+      if (index > 1) {
+        img.setAttribute('loading', 'lazy');
+        img.setAttribute('decoding', 'async');
+      }
+    });
+
+    // Initialize PhotoSwipe
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: '#write',
+      children: 'img:not(.pswp-ignore)',
+      pswpModule: () => import('photoswipe'),
+      imageClickAction: 'zoom',
+      tapAction: 'close',
+      doubleTapAction: 'zoom',
+      bgClickAction: 'close',
+      bgOpacity: 0.8,
+      padding: { top: 20, bottom: 20, left: 20, right: 20 },
+      showHideAnimationType: 'zoom',
+      showAnimationDuration: 300,
+      hideAnimationDuration: 300,
+    });
+
+    // Smooth border-radius transition: remove during animation, restore after
+    let currentThumb: HTMLElement | null = null;
+
+    lightbox.on('openingAnimationStart', () => {
+      currentThumb = lightbox.pswp?.currSlide?.data?.element as HTMLElement;
+      currentThumb?.classList.add('pswp-animating');
+    });
+
+    lightbox.on('openingAnimationEnd', () => {
+      document.querySelector('.pswp')?.classList.add('pswp--anim-complete');
+    });
+
+    lightbox.on('closingAnimationStart', () => {
+      document.querySelector('.pswp')?.classList.remove('pswp--anim-complete');
+    });
+
+    lightbox.on('closingAnimationEnd', () => {
+      currentThumb?.classList.remove('pswp-animating');
+      currentThumb = null;
+    });
+
+    // Parse data from image tags
+    lightbox.on('uiRegister', function () {
+      lightbox.pswp.ui.registerElement({
+        name: 'custom-caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        html: 'Caption text',
+        onInit: (el, pswp) => {
+          pswp.on('change', () => {
+            const currSlideElement = pswp.currSlide.data.element;
+            let captionText = '';
+            if (currSlideElement) {
+              captionText = currSlideElement.getAttribute('alt') || '';
+            }
+            el.innerHTML = captionText ? `<div class="pswp-caption-content">${captionText}</div>` : '';
+          });
+        },
+      });
+    });
+
+    // Handle opening via validation of data attributes
+    lightbox.addFilter('domItemData', (itemData, element) => {
+      if (!element) {
+        return itemData;
+      }
+
+      // Exclude specific images (like logo)
+      if (element.classList.contains('pswp-ignore') || element.closest('.content-logo') || element.closest('.logo')) {
+        return null;
+      }
+
+      // Only include images with proper data attributes or valid src
+      const src = element.getAttribute('data-pswp-src') || element.src;
+
+      // Skip SVGs (vector, no raster size); GIFs are allowed so animated images can zoom.
+      // GIFs keep their original src (rehype leaves them un-rewritten, so the animation is
+      // preserved) and fall back to naturalWidth/naturalHeight below for lightbox sizing.
+      if (src && src.toLowerCase().includes('.svg')) {
+        return null;
+      }
+
+      itemData.src = src;
+      itemData.w = Number(element.getAttribute('data-pswp-width')) || element.naturalWidth || 1000;
+      itemData.h = Number(element.getAttribute('data-pswp-height')) || element.naturalHeight || 1000;
+      itemData.msrc = element.src;
+
+      return itemData;
+    });
+
+    lightbox.init();
+  });
+</script>

@@ -1,0 +1,72 @@
+---
+import '../styles/markdown.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header/Header.astro';
+import { SITE } from '@/config';
+import { FAQ } from '@/data/faq';
+import { useTranslations } from '../i18n/utils';
+import { Content as AboutZh } from '@/data/about.zh.md';
+import { Content as AboutEn } from '@/data/about.en.md';
+
+export interface Props {
+  lang: 'zh' | 'en';
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const isEn = lang === 'en';
+
+const heading = isEn ? 'About 拾遗周刊' : '关于拾遗周刊';
+const description = isEn
+  ? 'About 拾遗周刊 and the things worth keeping from technology, products, and life.'
+  : '关于拾遗周刊，以及技术、产品与生活里那些值得留下来的东西。';
+const pageURL = `${SITE.homePage}${isEn ? '/en/about' : '/about'}`;
+const faq = FAQ[lang];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': `${pageURL}#faq`,
+  inLanguage: isEn ? 'en' : 'zh-Hans',
+  name: heading,
+  mainEntity: faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+---
+
+<BaseLayout
+  title={isEn ? `${t('site.title')} About` : `${SITE.title}关于`}
+  description={description}
+  pageURL={pageURL}
+  markdownUrl={isEn ? '/en/about.md' : '/about.md'}
+>
+  <script slot='head' type='application/ld+json' set:html={JSON.stringify(faqSchema)} />
+
+  <Header />
+  <main class='page-container mx-auto mb-16 -mt-2'>
+    <article class='markdown-body heti'>
+      <h1>{heading}</h1>
+      {isEn ? <AboutEn /> : <AboutZh />}
+      <h2>{isEn ? 'Frequently asked questions' : '常见问题'}</h2>
+      {
+        faq.map((item) => (
+          <Fragment>
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </Fragment>
+        ))
+      }
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  article :global(h1) {
+    margin-block-start: 0;
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+</style>
