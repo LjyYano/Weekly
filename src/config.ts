@@ -7,7 +7,7 @@ export const SITE = {
   siteImage: "https://weekly.yano.blog/yano-mark.svg",
   homePage: "https://weekly.yano.blog",
   blogPage: "https://yano.blog",
-  twitterId: "yano82895800",
+  twitterId: "yanobuilds",
   githubId: "LjyYano",
   repo: "LjyYano/Weekly",
 };
