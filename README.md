@@ -4,7 +4,7 @@
 
 - Website: https://weekly.yano.blog
 - Blog: https://yano.blog
-- X: https://x.com/yano82895800
+- X: https://x.com/yanobuilds
 
 ## Development
 

@@ -23,7 +23,7 @@ Issues are written on a weekly cadence and numbered from 01 upward. There is no 
 
 - RSS: [/rss.xml](https://weekly.yano.blog/rss.xml)
 - GitHub: [LjyYano/Weekly](https://github.com/LjyYano/Weekly)
-- X: [@yano82895800](https://x.com/yano82895800)
+- X: [@yanobuilds](https://x.com/yanobuilds)
 - Blog: [yano.blog](https://yano.blog)
 
 ## Quoting and licensing

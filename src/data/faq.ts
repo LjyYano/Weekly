@@ -12,7 +12,7 @@ export const FAQ: Record<"zh" | "en", { q: string; a: string }[]> = {
     },
     {
       q: "怎么订阅？",
-      a: "可以订阅 /rss.xml，也可以关注 GitHub 上的 LjyYano/Weekly 仓库或 X 上的 @yano82895800。",
+      a: "可以订阅 /rss.xml，也可以关注 GitHub 上的 LjyYano/Weekly 仓库或 X 上的 @yanobuilds。",
     },
     {
       q: "可以引用周刊里的内容吗？",
@@ -30,7 +30,7 @@ export const FAQ: Record<"zh" | "en", { q: string; a: string }[]> = {
     },
     {
       q: "How do I subscribe?",
-      a: "Subscribe to /rss.xml, follow the LjyYano/Weekly repository on GitHub, or follow @yano82895800 on X.",
+      a: "Subscribe to /rss.xml, follow the LjyYano/Weekly repository on GitHub, or follow @yanobuilds on X.",
     },
     {
       q: "Can I quote the content?",
