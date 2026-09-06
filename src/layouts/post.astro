@@ -15,7 +15,8 @@ export interface Props {
   frontmatter: {
     date: string;
     image?: string;
-    description: string;
+    description?: string;
+    coverDescription?: string;
     url: string;
     socialImage: string;
     numericUrl?: string;
@@ -31,7 +32,7 @@ const normalize = (path: string | undefined) => {
   if (!path) return path;
   return path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
 };
-const { date, image, description, url, socialImage, numericUrl, legacySlug, issueTitle } = Astro.props.frontmatter;
+const { date, image, description, coverDescription, url, socialImage, numericUrl, legacySlug, issueTitle } = Astro.props.frontmatter;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -350,6 +351,7 @@ const giscusTheme = `${Astro.url.origin}/styles/giscus-light.css`;
             />
           )
         }
+        {coverDescription && <p class='post-description'>{coverDescription}</p>}
         <slot />
         <div class='flex align-middle justify-center mt-4 pay-button-wrapper'>
           <a

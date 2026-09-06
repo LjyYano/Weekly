@@ -43,6 +43,8 @@ function defaultLayoutPlugin() {
 
     const { frontmatter } = file.data.astro;
     frontmatter.layout = "@layouts/post.astro";
+    // Only an explicitly authored description belongs below the cover.
+    frontmatter.coverDescription = frontmatter.description?.trim() || undefined;
 
     const isEn = filePath.includes("/en/posts/");
     const postsDir = isEn ? "/en/posts/" : "/posts/";
@@ -73,7 +75,7 @@ function defaultLayoutPlugin() {
       frontmatter.image = imageElement.getAttribute("src");
     }
 
-    if (tree.children[1]?.children[1]?.value) {
+    if (!frontmatter.description && tree.children[1]?.children[1]?.value) {
       frontmatter.description = tree.children[1].children[1].value;
     }
 
