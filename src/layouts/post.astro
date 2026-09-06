@@ -14,7 +14,7 @@ import { getLangFromUrl, useTranslations, useLocalizedPath } from '../i18n/utils
 export interface Props {
   frontmatter: {
     date: string;
-    image: string;
+    image?: string;
     description: string;
     url: string;
     socialImage: string;
@@ -22,7 +22,6 @@ export interface Props {
     legacySlug?: string;
     issueTitle?: string;
     issueNumber?: number;
-    heroImage?: string;
   };
 }
 
@@ -32,7 +31,7 @@ const normalize = (path: string | undefined) => {
   if (!path) return path;
   return path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
 };
-const { date, image, description, url, socialImage, numericUrl, legacySlug, issueTitle, heroImage } = Astro.props.frontmatter;
+const { date, image, description, url, socialImage, numericUrl, legacySlug, issueTitle } = Astro.props.frontmatter;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -92,7 +91,6 @@ const giscusTheme = `${Astro.url.origin}/styles/giscus-light.css`;
   markdownUrl={`${effectivePath}.md`}
 >
   <meta slot='head' data-pagefind-meta={`url:${currentUrl}`} />
-  {heroImage && <link rel='preload' as='image' href={heroImage} slot='head' fetchpriority='high' />}
   <!-- Post-specific styles -->
   <style slot='head'>
     body {
@@ -119,6 +117,15 @@ const giscusTheme = `${Astro.url.origin}/styles/giscus-light.css`;
 
     .content-title {
       align-items: center;
+    }
+
+    .post-cover {
+      display: block;
+      width: 100%;
+      max-height: 560px;
+      margin: 0 0 32px;
+      object-fit: cover;
+      border-radius: var(--radius);
     }
 
     .content-title .content-logo {
@@ -150,6 +157,11 @@ const giscusTheme = `${Astro.url.origin}/styles/giscus-light.css`;
 
       .heti h1.content-title:first-child {
         margin-bottom: 32px;
+      }
+
+      .post-cover {
+        max-height: none;
+        margin-bottom: 24px;
       }
 
       .markdown-body {
@@ -325,6 +337,19 @@ const giscusTheme = `${Astro.url.origin}/styles/giscus-light.css`;
             {lang === 'en' ? '中' : 'En'}
           </a>
         </h1>
+        {
+          image && (
+            <img
+              class='post-cover'
+              src={`${image}?x-oss-process=image/resize,w_1200/format,webp`}
+              alt={lang === 'en' ? `${displayTitle} cover image` : `${displayTitle} 封面图`}
+              width='1200'
+              loading='eager'
+              decoding='async'
+              fetchpriority='high'
+            />
+          )
+        }
         <slot />
         <div class='flex align-middle justify-center mt-4 pay-button-wrapper'>
           <a
