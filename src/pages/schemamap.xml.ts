@@ -24,7 +24,6 @@ export const GET = () => {
         "  <url>",
         `    <loc>${loc}</loc>`,
         lastmod ? `    <lastmod>${lastmod}</lastmod>` : "",
-        "    <changefreq>weekly</changefreq>",
         "  </url>",
       ]
         .filter(Boolean)

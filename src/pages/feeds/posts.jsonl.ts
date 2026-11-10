@@ -41,7 +41,6 @@ const blogPosting = (issue: Issue) => ({
     name: SITE.title,
     url: SITE.homePage,
   },
-  license: `${SITE.homePage}/about`,
 });
 
 export const GET = () => {

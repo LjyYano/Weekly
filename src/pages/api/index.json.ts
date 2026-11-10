@@ -9,15 +9,13 @@ export const GET = () => {
   const latest = zhIssues[0]?.num ?? 1;
 
   return jsonResponse({
-    name: "潮流周刊 (Tw93 Weekly) content API",
-    description:
-      "Read-only static JSON API over the 潮流周刊 archive: weekly issues of developer tools, engineering notes, design and life, in Chinese with English translations.",
+    name: `${SITE.title} content API`,
+    description: SITE.description,
     version: "1.0.0",
     site,
     documentation: `${site}/llms.md`,
     openapi: `${site}/openapi.json`,
     agentIndex: `${site}/llms.txt`,
-    apiCatalog: `${site}/.well-known/api-catalog`,
     auth: {
       required: false,
       scheme: null,
@@ -32,15 +30,13 @@ export const GET = () => {
     },
     contentModel: {
       identifier: "issue number, stable across languages and never reused",
-      cadence: "one issue every Monday",
-      languages: ["zh-Hans", "en"],
-      sections: [
-        "潮流工具 / Trending Tools",
-        "潮流开源 / Trending Open Source",
-        "潮流文章 / Trending Articles",
-        "潮流软件 / Trending Apps",
-        "潮流分享 / Notes",
+      publication: "Publication dates are recorded per issue; no fixed schedule is specified.",
+      languages: [
+        ...(zhIssues.length ? ["zh-Hans"] : []),
+        ...(enIssues.length ? ["en"] : []),
       ],
+      translations: "Available only when a matching issue exists; otherwise translation is null.",
+      sections: "Headings vary by issue; read contentMarkdown for the actual sections.",
     },
     endpoints: [
       {
@@ -64,8 +60,8 @@ export const GET = () => {
       {
         method: "GET",
         path: "/api/en/posts/{issue}.json",
-        description: "English translation of one issue, same shape.",
-        example: `${site}/api/en/posts/${latest}.json`,
+        description: "English translation when available; same response shape.",
+        ...(enIssues[0] ? { example: enIssues[0].jsonUrl } : {}),
       },
       {
         method: "GET",
@@ -76,8 +72,8 @@ export const GET = () => {
       {
         method: "GET",
         path: "/en/posts/{issue}.md",
-        description: "English issue as Markdown (text/markdown).",
-        example: `${site}/en/posts/${latest}.md`,
+        description: "English issue when available, as Markdown (text/markdown).",
+        ...(enIssues[0] ? { example: enIssues[0].mdUrl } : {}),
       },
       {
         method: "GET",
@@ -95,15 +91,8 @@ export const GET = () => {
         description: "RSS feed with the full HTML of recent issues.",
       },
     ],
-    license: {
-      content:
-        "Free to read, quote and summarise with attribution to 潮流周刊 / Tw93 Weekly and a link to the issue URL.",
-      code: "MIT",
-      repository: `https://github.com/${SITE.repo}`,
-    },
     contact: {
-      author: "Tw93",
-      email: "tw93@qq.com",
+      author: SITE.author,
       github: `https://github.com/${SITE.githubId}`,
       x: `https://x.com/${SITE.twitterId}`,
       issues: `https://github.com/${SITE.repo}/issues`,

@@ -140,7 +140,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "</sitemap-index.xml>; rel=\"sitemap\", </index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\", </llms.md>; rel=\"service-doc\"; type=\"text/markdown\", </openapi.json>; rel=\"service-desc\"; type=\"application/openapi+json\", </.well-known/api-catalog>; rel=\"api-catalog\", </en>; rel=\"alternate\"; hreflang=\"en\""
+          "value": "</sitemap-index.xml>; rel=\"sitemap\", </index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\", </llms.md>; rel=\"service-doc\"; type=\"text/markdown\", </openapi.json>; rel=\"service-desc\"; type=\"application/openapi+json\", </en>; rel=\"alternate\"; hreflang=\"en\""
         }
       ]
     },
@@ -149,7 +149,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "</sitemap-index.xml>; rel=\"sitemap\", </en/index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\", </llms.md>; rel=\"service-doc\"; type=\"text/markdown\", </openapi.json>; rel=\"service-desc\"; type=\"application/openapi+json\", </.well-known/api-catalog>; rel=\"api-catalog\", </>; rel=\"alternate\"; hreflang=\"zh-Hans\""
+          "value": "</sitemap-index.xml>; rel=\"sitemap\", </en/index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\", </llms.md>; rel=\"service-doc\"; type=\"text/markdown\", </openapi.json>; rel=\"service-desc\"; type=\"application/openapi+json\", </>; rel=\"alternate\"; hreflang=\"zh-Hans\""
         }
       ]
     }

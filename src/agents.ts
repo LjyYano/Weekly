@@ -86,6 +86,14 @@ export const getIssues = (lang: Lang): Issue[] =>
     .filter((issue): issue is Issue => issue !== null)
     .sort((a, b) => b.num - a.num);
 
+export const archiveDescription = (lang: Lang = "zh") => {
+  const issues = getIssues(lang);
+  const dates = issues.map((issue) => issue.date).filter(Boolean).sort();
+  return `${issues.length} ${lang === "en" ? "English" : "Chinese"} issues in the archive.${
+    dates.length ? ` Publication dates: ${dates[0]} – ${dates[dates.length - 1]}.` : ""
+  } Dates and available translations are recorded per issue; no fixed publication schedule is specified.`;
+};
+
 export const getIssue = (lang: Lang, num: number): Issue | undefined =>
   getIssues(lang).find((issue) => issue.num === num);
 
@@ -181,21 +189,18 @@ export const textResponse = (
   });
 
 const label = (lang: Lang) => ({
-  siteTitle: lang === "en" ? "Weekly (潮流周刊)" : "潮流周刊 (Tw93 Weekly)",
-  tagline:
-    lang === "en"
-      ? "Recording engineer Tw93's interesting life, published every Monday."
-      : "记录工程师 Tw93 的不枯燥生活，每周一发布。",
+  siteTitle: SITE.title,
+  tagline: SITE.description,
   issues: lang === "en" ? "Issues" : "全部期刊",
   published: lang === "en" ? "Published" : "发布日期",
 });
 
 /** Canonical markdown view of a single issue. */
 export const renderIssueMarkdown = (issue: Issue, body: string) => {
-  const other =
-    issue.lang === "en"
-      ? `- Chinese original: ${SITE.homePage}/posts/${issue.num}.md`
-      : `- English translation: ${SITE.homePage}/en/posts/${issue.num}.md`;
+  const counterpart = getIssue(issue.lang === "en" ? "zh" : "en", issue.num);
+  const other = counterpart
+    ? `- ${issue.lang === "en" ? "Chinese original" : "English translation"}: ${counterpart.mdUrl}`
+    : null;
 
   return [
     `# ${issue.title}`,
@@ -229,9 +234,7 @@ export const renderIndexMarkdown = (lang: Lang) => {
     "",
     `> ${l.tagline}`,
     "",
-    isEn
-      ? `A Chinese-language weekly newsletter about tools, engineering, design and life, written by Tw93 and translated into English. ${issues.length} issues published since November 2020, every Monday.`
-      : `每周一发布的中文周刊，记录一周里看到的工具、工程、设计和生活，作者 Tw93。自 2020 年 11 月起已发布 ${issues.length} 期。`,
+    `Author: ${SITE.author}. ${archiveDescription(lang)}`,
     "",
     `## ${isEn ? "Site map" : "站点地图"}`,
     "",

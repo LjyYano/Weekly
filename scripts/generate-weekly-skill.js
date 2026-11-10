@@ -34,6 +34,11 @@ export async function renderWeeklySkill(apiSummary) {
 
   const template = await fs.readFile(TEMPLATE, "utf8");
   return template
+    .replaceAll("{{SITE_TITLE}}", apiSummary.name)
+    .replaceAll("{{SITE_AUTHOR}}", apiSummary.author)
+    .replaceAll("{{SITE_DESCRIPTION}}", apiSummary.description)
+    .replaceAll("{{SITE_URL}}", apiSummary.site)
+    .replaceAll("{{REPOSITORY_URL}}", apiSummary.repository)
     .replaceAll("{{LATEST_ISSUE}}", String(apiSummary.latestIssue))
     .replace("{{LATEST_ISSUE_SAMPLE}}", JSON.stringify(sample, null, 2));
 }

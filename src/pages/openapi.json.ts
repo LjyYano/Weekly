@@ -6,7 +6,7 @@ const issueParam = {
   in: "path",
   required: true,
   description:
-    "Issue number, stable across languages. 274 means the 274th weekly issue.",
+    "Issue number. Use the issue index to discover available issues and translations.",
   schema: { type: "integer", minimum: 1 },
 };
 
@@ -27,22 +27,15 @@ export const GET = () => {
   return jsonResponse({
     openapi: "3.1.0",
     info: {
-      title: "潮流周刊 (Tw93 Weekly) content API",
-      summary:
-        "Read-only access to every issue of the 潮流周刊 weekly newsletter.",
+      title: `${SITE.title} content API`,
+      summary: SITE.description,
       description:
-        "潮流周刊 (Tw93 Weekly) is a Chinese-language weekly newsletter of developer tools, engineering notes, design and life, written by Tw93 and translated into English. This API exposes the archive as JSON and Markdown. Every endpoint is a public prerendered static file: no authentication, no rate limit, no write operations, CORS open to all origins.",
+        `${SITE.title} by ${SITE.author}. ${SITE.description} This read-only static API exposes published issues as JSON and Markdown. Translations are available only for issues present in the archive. No authentication or write operations; CORS open to all origins.`,
       version: "1.0.0",
       contact: {
-        name: "Tw93",
-        url: SITE.homePage,
-        email: "tw93@qq.com",
+        name: SITE.author,
+        url: `https://github.com/${SITE.repo}/issues`,
       },
-      license: {
-        name: "MIT (site code)",
-        url: `https://github.com/${SITE.repo}/blob/main/LICENSE`,
-      },
-      termsOfService: `${SITE.homePage}/about`,
     },
     externalDocs: {
       description: "Agent guide: when to use this site and how to call it",
@@ -65,7 +58,7 @@ export const GET = () => {
           tags: ["index"],
           summary: "Service description",
           description:
-            "Endpoint list, issue counts, content model, licensing and contact details for the archive.",
+            "Endpoint list, issue counts, content model and contact details for the archive.",
           responses: {
             "200": {
               description: "Service description document.",
@@ -103,7 +96,7 @@ export const GET = () => {
           tags: ["issues"],
           summary: "Get one Chinese issue with its Markdown body",
           description:
-            "Metadata plus the full Markdown source of a single Chinese issue, with links to the English translation and the neighbouring issues.",
+            "Metadata plus the full Markdown source of a single Chinese issue, with a translation link when available and links to neighbouring issues.",
           parameters: [issueParam],
           responses: {
             "200": {
@@ -197,7 +190,7 @@ export const GET = () => {
           tags: ["index"],
           summary: "Agent guide",
           description:
-            "When to use this site, how to call it, content model, limits and attribution rules.",
+            "When to use this site, how to call it, content model, archive conventions and contact links.",
           responses: markdownResponse("Agent guide as Markdown."),
         },
       },
@@ -258,7 +251,8 @@ export const GET = () => {
             },
             title: {
               type: "string",
-              description: "Display title, e.g. 第 274 期 - 海阔天空.",
+              description: "Display title from the published issue.",
+              examples: issues[0] ? [issues[0].title] : [],
             },
             name: {
               type: "string",
@@ -268,7 +262,7 @@ export const GET = () => {
             date: {
               type: "string",
               description: "Publication date, YYYY/MM/DD.",
-              examples: ["2026/07/20"],
+              examples: issues[0] ? [issues[0].date] : [],
             },
             description: {
               type: "string",
@@ -337,6 +331,8 @@ export const GET = () => {
           required: ["count", "issues"],
           properties: {
             site: { type: "string", format: "uri" },
+            author: { type: "string" },
+            repository: { type: "string", format: "uri" },
             name: { type: "string" },
             description: { type: "string" },
             count: {

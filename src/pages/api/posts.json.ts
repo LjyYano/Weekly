@@ -8,9 +8,10 @@ export const GET = () => {
 
   return jsonResponse({
     site: SITE.homePage,
-    name: "潮流周刊 (Tw93 Weekly)",
-    description:
-      "Weekly curation of developer tools, engineering notes, design and life by Tw93. One issue per week since November 2020, Chinese original with English translation.",
+    name: SITE.title,
+    author: SITE.author,
+    repository: `https://github.com/${SITE.repo}`,
+    description: SITE.description,
     documentation: `${SITE.homePage}/llms.md`,
     openapi: `${SITE.homePage}/openapi.json`,
     count: zhIssues.length,

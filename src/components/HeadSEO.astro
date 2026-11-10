@@ -43,33 +43,24 @@ const person = {
   '@id': personId,
   name: author,
   url: blogPage,
-  jobTitle: 'Product Engineer',
-  knowsAbout: ['Frontend engineering', 'macOS apps', 'Rust', 'Swift', 'Electron', 'Product design', 'Open source'],
-  address: { '@type': 'PostalAddress', addressLocality: 'Hangzhou', addressRegion: 'Zhejiang', addressCountry: 'CN' },
   sameAs,
 };
 
 const organization = {
   '@type': 'Organization',
   '@id': organizationId,
-  name: '潮流周刊 (Tw93 Weekly)',
-  alternateName: ['潮流周刊', 'Tw93 Weekly', 'Weekly'],
+  name: SITE.title,
   url: homePage,
   logo: { '@type': 'ImageObject', url: icon, width: 144, height: 144 },
   image: siteImage,
   description: t('site.description'),
-  email: 'tw93@qq.com',
-  foundingDate: '2020-11-24',
   founder: { '@id': personId },
   publishingPrinciples: `${homePage}/about`,
-  address: { '@type': 'PostalAddress', addressLocality: 'Hangzhou', addressRegion: 'Zhejiang', addressCountry: 'CN' },
   contactPoint: [
     {
       '@type': 'ContactPoint',
       contactType: 'editorial',
-      email: 'tw93@qq.com',
       url: `https://github.com/${repo}/issues`,
-      availableLanguage: ['Chinese', 'English'],
     },
   ],
   sameAs,
@@ -79,7 +70,6 @@ const website = {
   '@type': 'WebSite',
   '@id': websiteId,
   name: title,
-  alternateName: ['潮流周刊', 'Tw93 Weekly'],
   url: homePage,
   description: t('site.description'),
   inLanguage: ['zh-Hans', 'en'],
@@ -93,7 +83,7 @@ const website = {
 const blog = {
   '@type': 'Blog',
   '@id': blogId,
-  name: '潮流周刊 (Tw93 Weekly)',
+  name: SITE.title,
   url: homePage,
   description: t('site.description'),
   inLanguage: ['zh-Hans', 'en'],
@@ -106,12 +96,11 @@ const blog = {
 const webApi = {
   '@type': 'WebAPI',
   '@id': apiId,
-  name: '潮流周刊 (Tw93 Weekly) content API',
+  name: `${SITE.title} content API`,
   description:
-    'Read-only static JSON and Markdown API over every weekly issue. No key, no rate limit, CORS open, no write operations.',
+    'Read-only static JSON and Markdown API over every weekly issue. No key, CORS open, no write operations.',
   url: `${homePage}/api`,
   documentation: `${homePage}/llms.md`,
-  termsOfService: `${homePage}/about`,
   isAccessibleForFree: true,
   provider: { '@id': organizationId },
 };
@@ -119,8 +108,8 @@ const webApi = {
 const dataFeed = {
   '@type': 'DataFeed',
   '@id': `${homePage}/#feed`,
-  name: '潮流周刊 issue feed',
-  description: 'One schema.org BlogPosting per line for every issue, Chinese and English.',
+  name: `${SITE.title} issue feed`,
+  description: 'One schema.org BlogPosting per line for available Chinese and English issues.',
   url: `${homePage}/feeds/posts.jsonl`,
   encodingFormat: 'application/x-ndjson',
   inLanguage: ['zh-Hans', 'en'],
@@ -217,7 +206,6 @@ const structuredData = {
 <link rel='describedby' type='text/plain' href='/llms.txt' title='Agent index' />
 <link rel='service-desc' type='application/openapi+json' href='/openapi.json' title='OpenAPI 3.1 description' />
 <link rel='service-doc' type='text/markdown' href='/llms.md' title='Agent guide' />
-<link rel='api-catalog' href='/.well-known/api-catalog' title='API catalog' />
 
 <!-- JSON-LD Structured Data -->
 <script type='application/ld+json' set:html={JSON.stringify(structuredData)} />

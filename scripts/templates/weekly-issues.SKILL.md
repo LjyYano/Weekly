@@ -1,27 +1,27 @@
 ---
 name: weekly-issues
-description: Read issues of 潮流周刊 (Tw93 Weekly), a Chinese-language weekly newsletter of developer tools, open source projects, engineering notes and design, with English translations. Use when a task asks what a specific issue or week covered, which tools Tw93 recommended, or needs a bilingual quote from the archive.
-homepage: https://weekly.tw93.fun
+description: Read published issues of {{SITE_TITLE}} by {{SITE_AUTHOR}}. Find topics, tools and notes in the archive; translations are available only when linked in the issue index.
+homepage: {{SITE_URL}}
 ---
 
-# 潮流周刊 (Tw93 Weekly)
+# {{SITE_TITLE}}
 
-潮流周刊 is a weekly newsletter written by Tw93, a product engineer in Hangzhou and the author of Pake, MiaoYan, Kaku and Mole. Each issue curates small practical developer tools, open source projects, articles, macOS apps and personal notes. Issues are published every Monday, numbered from 1, and every Chinese issue has an English translation under the same number.
+{{SITE_TITLE}} is a personal newsletter by {{SITE_AUTHOR}}. {{SITE_DESCRIPTION}} Dates and available translations come from the issue index; no fixed publication schedule is specified.
 
-Everything below is public static content: no API key, no token, no rate limit, `Access-Control-Allow-Origin: *`, and no write operations.
+Everything below is public static content: no API key, no token, `Access-Control-Allow-Origin: *`, and no write operations.
 
 ## When to use this
 
-- A question names an issue number, or asks what a given week or month of 潮流周刊 covered.
-- A task needs the tools, projects or articles Tw93 highlighted, with the original wording and outbound links.
-- A quote is needed in both Chinese and English from the same paragraph of the same issue.
+- A question names an issue number, or asks what a given week or month of {{SITE_TITLE}} covered.
+- A task needs the tools, projects or articles {{SITE_AUTHOR}} highlighted, with the original wording and outbound links.
+- A quote is needed from a published issue, or from a translation when available.
 
 Do not use it as a general search engine or as official documentation for the products it mentions: it is one person's curation, and the products are third-party.
 
 ## Locate an issue
 
 ```
-GET https://weekly.tw93.fun/api/posts.json
+GET {{SITE_URL}}/api/posts.json
 ```
 
 Returns every issue, newest first. This sample is generated from the current archive:
@@ -30,22 +30,22 @@ Returns every issue, newest first. This sample is generated from the current arc
 {{LATEST_ISSUE_SAMPLE}}
 ```
 
-For a compact human-readable index of the whole archive, fetch `https://weekly.tw93.fun/index.md`.
+For a compact human-readable index of the whole archive, fetch `{{SITE_URL}}/index.md`.
 
 ## Read an issue
 
 Append `.md` to any issue URL to get the Markdown source:
 
 ```
-GET https://weekly.tw93.fun/posts/{{LATEST_ISSUE}}.md      # Chinese
-GET https://weekly.tw93.fun/en/posts/{{LATEST_ISSUE}}.md   # English
+GET {{SITE_URL}}/posts/{{LATEST_ISSUE}}.md      # Chinese
+# English: follow translation.markdownUrl only when translation is non-null.
 ```
 
 Or take metadata and body together as JSON:
 
 ```
-GET https://weekly.tw93.fun/api/posts/{{LATEST_ISSUE}}.json
-GET https://weekly.tw93.fun/api/en/posts/{{LATEST_ISSUE}}.json
+GET {{SITE_URL}}/api/posts/{{LATEST_ISSUE}}.json
+# English: follow translation.jsonUrl only when translation is non-null.
 ```
 
 The JSON response carries `contentMarkdown` (the full Markdown body), `translation`, `newerIssue` and `olderIssue`.
@@ -53,19 +53,19 @@ The JSON response carries `contentMarkdown` (the full Markdown body), `translati
 ## Bulk ingest
 
 ```
-GET https://weekly.tw93.fun/feeds/posts.jsonl
+GET {{SITE_URL}}/feeds/posts.jsonl
 ```
 
 One schema.org `BlogPosting` JSON-LD object per line, both languages. Prefer this plus `/api/posts.json` over crawling the HTML pages.
 
 ## Issue anatomy
 
-- The first image is the cover, the first `<small>` block is the one-line description of that week.
-- Content sits under headings: 潮流工具 (tools), 潮流开源 (open source), 潮流文章 (articles), 潮流软件 (apps), 潮流分享 (notes). English issues use the translated headings.
-- Each item is a short paragraph ending in an outbound link to the tool or article being recommended.
+- Dates, cover images and descriptions come from issue metadata.
+- Section headings vary by issue; read contentMarkdown for the actual structure.
+- Follow outbound links for original sources and product documentation.
 
 ## Errors and attribution
 
-- Unknown issue numbers return HTTP 404. `/api/posts/{issue}.json` returns `{"error": {"code": "issue_not_found", "message": ..., "hint": ...}}`; other paths return the site's HTML 404 page, so check `response.ok` rather than parsing the body.
-- Quoting and summarising is welcome. Attribute to 潮流周刊 / Tw93 Weekly and link the issue URL. Do not hotlink the images.
-- Source of every issue: https://github.com/tw93/weekly
+- Unknown issue numbers return HTTP 404; check response.ok before parsing a response body.
+- For reuse terms, consult {{SITE_URL}}/about. The API does not grant a blanket license for articles or third-party assets.
+- Source of every issue: {{REPOSITORY_URL}}

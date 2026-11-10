@@ -2,7 +2,7 @@
 // and the scoped /api/llms.txt, /posts/llms.txt. All generated from the real
 // post set so counts and links cannot go stale.
 import { SITE } from "./config";
-import { getIssues } from "./agents";
+import { archiveDescription, getIssues } from "./agents";
 
 const site = SITE.homePage;
 
@@ -18,30 +18,30 @@ const recentList = (limit: number) =>
 const whenToUse = [
   "## When to use this site",
   "",
-  "Reach for 潮流周刊 (Tw93 Weekly) when a task involves:",
+  `Reach for ${SITE.title} by ${SITE.author} when a task involves:`,
   "",
-  "- Finding small, practical developer tools, macOS apps, open source projects or design resources that were highlighted in a specific week or year since late 2020.",
-  "- Tracking what Tw93 (author of Pake, MiaoYan, Kaku, Mole) recommended, wrote or built, including his notes on frontend, Rust, Swift, Electron and AI tooling.",
-  "- Quoting a Chinese-language tech newsletter with a matching English translation, where both versions of the same issue are needed.",
+  "- Finding small, practical developer tools, macOS apps, open source projects or design resources that were highlighted in a published issue.",
+  `- Finding what ${SITE.author} recorded about technology, products and life.`,
+  "- Reading an issue and its English translation when the index provides one; not every issue has a translation.",
   '- Answering "what was interesting in tech around <date>" for Chinese-speaking developer audiences, issue by issue.',
   "",
-  "Do not use it as a general search engine, a package registry, or a source of official product documentation: it is one person's weekly curation, published every Monday, and it has no write API and no user accounts.",
+  "Do not use it as a general search engine, a package registry, or a source of official product documentation: it is a personal archive, and it has no write API and no user accounts.",
   "",
   "## How an agent should call it",
   "",
   `1. Fetch the issue index: \`GET ${site}/api/posts.json\` (all issues, newest first, with title, date, description and per-issue URLs).`,
-  `2. Read one issue as Markdown: \`GET ${site}/posts/{num}.md\` (Chinese) or \`GET ${site}/en/posts/{num}.md\` (English).`,
+  `2. Read one issue as Markdown: \`GET ${site}/posts/{num}.md\` (Chinese) or \`GET ${site}/en/posts/{num}.md\` (English, only when available in the index).`,
   `3. Or read one issue as JSON, Markdown body included: \`GET ${site}/api/posts/{num}.json\`.`,
-  "4. Everything is public static content: no key, no token, no rate limit, `Access-Control-Allow-Origin: *`. There is nothing to authenticate and no state to mutate.",
+  "4. Everything is public static content: no key, no token, `Access-Control-Allow-Origin: *`. There is nothing to authenticate and no state to mutate.",
   "",
 ].join("\n");
 
 export const buildLlmsTxt = () => {
   const issues = getIssues("zh");
   return [
-    "# 潮流周刊 (Tw93 Weekly)",
+    `# ${SITE.title}`,
     "",
-    `> Chinese-language weekly newsletter of developer tools, engineering notes, design and life by Tw93. ${issues.length} issues since November 2020, published every Monday, each with an English translation.`,
+    `> ${SITE.title} — ${SITE.author}. ${SITE.description} ${archiveDescription()}`,
     "",
     "## Start here",
     "",
@@ -65,43 +65,40 @@ export const buildLlmsTxt = () => {
     `- [OpenAPI 3.1 spec](${site}/openapi.json)`,
     `- [JSON-LD feed](${site}/feeds/posts.jsonl) (one BlogPosting per line)`,
     `- [Schema map](${site}/schemamap.xml)`,
-    `- [Agent skills index](${site}/.well-known/agent-skills/index.json)`,
-    `- [API catalog (RFC 9727)](${site}/.well-known/api-catalog)`,
     `- Scoped guides: [API](${site}/api/llms.txt) / [Posts](${site}/posts/llms.txt)`,
     "",
     whenToUse,
     "## Author",
     "",
-    `- Tw93, product engineer in Hangzhou, China. [Blog](${SITE.blogPage}) / [GitHub](https://github.com/${SITE.githubId}) / [X](https://x.com/${SITE.twitterId})`,
-    `- Source repository: [github.com/${SITE.repo}](https://github.com/${SITE.repo}), content licensed for reading and quoting with attribution and a link back.`,
+    `- ${SITE.author}. [Blog](${SITE.blogPage}) / [GitHub](https://github.com/${SITE.githubId}) / [X](https://x.com/${SITE.twitterId})`,
+    `- Source repository: [github.com/${SITE.repo}](https://github.com/${SITE.repo}).`,
     "",
   ].join("\n");
 };
 
 export const buildLlmsMarkdown = () => {
-  const issues = getIssues("zh");
   return [
-    "# 潮流周刊 (Tw93 Weekly) - Agent Guide",
+    `# ${SITE.title} - Agent Guide`,
     "",
-    `> Chinese-language weekly newsletter of developer tools, engineering notes, design and life by Tw93. ${issues.length} issues since November 2020, published every Monday, each with an English translation.`,
+    `> ${SITE.title} — ${SITE.author}. ${SITE.description} ${archiveDescription()}`,
     "",
     "This file is the machine-readable entry point for the site. It is static, public and safe to fetch repeatedly.",
     "",
     "## Identity",
     "",
-    `- Name: 潮流周刊, English name Weekly`,
+    `- Name: ${SITE.title}`,
     `- Home: ${site} (Chinese), ${site}/en (English)`,
-    "- Author: Tw93 (Tang), product engineer in Hangzhou, China",
+    `- Author: ${SITE.author}`,
     `- Source: https://github.com/${SITE.repo}`,
     "- Type: personal newsletter / blog archive. Free, no account, no paywall, no write API.",
     "",
     whenToUse,
     "## Content model",
     "",
-    "- One issue per week, numbered from 1. The issue number is the stable identifier and never changes.",
-    "- Every issue exists in Chinese (`/posts/{num}`) and English (`/en/posts/{num}`). Same number means same issue.",
-    "- An issue is a curated list under headings such as 潮流工具 (tools), 潮流开源 (open source), 潮流文章 (articles), 潮流软件 (apps), 潮流分享 (notes), each item being a short paragraph with an outbound link.",
-    "- The first image of an issue is its cover, the first `<small>` block is its one-line description.",
+    "- Issues are identified by number. Publication dates come from the published content; no fixed schedule is specified.",
+    "- Chinese issues use `/posts/{num}`. English versions use `/en/posts/{num}` when available. Check the index: `translation: null` means no matching translation.",
+    "- Sections vary by issue. Read the actual Markdown headings rather than assuming a fixed structure.",
+    "- Dates, descriptions and cover images come from the issue metadata; contentMarkdown contains the body.",
     "",
     "## Endpoints",
     "",
@@ -127,9 +124,9 @@ export const buildLlmsMarkdown = () => {
     "",
     "## Limits and etiquette",
     "",
-    "- No rate limit is enforced, but the whole archive is available in one request via `/api/posts.json` plus `/feeds/posts.jsonl`. Prefer those over crawling 200+ HTML pages.",
-    "- Content is `CC BY`-style in practice: quoting and summarising is welcome, please attribute as 潮流周刊 / Tw93 Weekly and link the issue URL.",
-    "- Images are hosted on `cdn.tw93.fun` and Alibaba CDN, do not hotlink them into other products.",
+    "- Prefer `/api/posts.json` and `/feeds/posts.jsonl` for bulk metadata. Hosting-level limits are not specified by this API.",
+    `- For content reuse, consult [About](${site}/about). This API does not grant a blanket license for articles or third-party assets.`,
+    `- Contact: [GitHub issues](https://github.com/${SITE.repo}/issues).`,
     "",
     `## Recent issues`,
     "",
@@ -142,9 +139,9 @@ export const buildLlmsMarkdown = () => {
 
 export const buildApiLlmsTxt = () =>
   [
-    "# 潮流周刊 API",
+    `# ${SITE.title} API`,
     "",
-    "> Read-only static JSON API over the weekly issue archive. No key, no rate limit, CORS open.",
+    "> Read-only static JSON API over the weekly issue archive. No key, CORS open.",
     "",
     "## Endpoints",
     "",
@@ -157,7 +154,7 @@ export const buildApiLlmsTxt = () =>
     "",
     "## Notes",
     "",
-    "- Issue numbers are stable identifiers; `274` always means the same issue in both languages.",
+    "- Issue numbers identify matching language versions when available. Use the index to discover valid links.",
     "- `contentMarkdown` in the single-issue response is the Markdown source, images and links included.",
     "- Nothing here mutates state; there is no POST, PUT or DELETE surface.",
     "",
@@ -168,14 +165,14 @@ export const buildApiLlmsTxt = () =>
 export const buildPostsLlmsTxt = () => {
   const issues = getIssues("zh");
   return [
-    "# 潮流周刊 Posts",
+    `# ${SITE.title} Posts`,
     "",
-    `> ${issues.length} weekly issues, newest first. Each issue is available as HTML, Markdown (\`.md\`) and JSON.`,
+    `> ${issues.length} Chinese issues, newest first. Each issue is available as HTML, Markdown (\`.md\`) and JSON.`,
     "",
     "## Conventions",
     "",
     `- Chinese: ${site}/posts/{num} / ${site}/posts/{num}.md`,
-    `- English: ${site}/en/posts/{num} / ${site}/en/posts/{num}.md`,
+    `- English (when available): ${site}/en/posts/{num} / ${site}/en/posts/{num}.md`,
     `- Index: ${site}/api/posts.json`,
     "",
     "## Issues",
